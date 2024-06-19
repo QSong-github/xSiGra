@@ -127,9 +127,11 @@ def test_nano_fov(
         img_transformed = img.x.numpy()
 
         for i in range(img_transformed.shape[0]):
-            img = img_transformed[i].reshape(w * 2, h * 2, 3)
-            img = transform(np.uint8(img))
-            img = img.reshape(1, 3, 224, 224)
+            img = img_transformed[i].reshape(3, w * 2, h * 2)
+            img = np.transpose(img, (1, 2, 0))
+            img = (img - img.min()) / (img.max() - img.min()) * 255
+            img = transform(np.uint8(img))   
+            img = img.unsqueeze(0)
             img = img.to(device)
             with torch.no_grad():
                 feature = vgg_extractor(img)
@@ -138,7 +140,7 @@ def test_nano_fov(
             features.append(feature.cpu().detach().numpy().reshape(-1))
 
         features = np.array(features)
-        features = np.vstack(features).astype(np.float)
+        features = np.vstack(features).astype(np.float64)
         img = torch.from_numpy(features)
         img_dim = features.shape[1]
 
@@ -205,7 +207,7 @@ def test_nano_fov(
         adata.obsm["pred"] = hidden_matrix
         adata.obsm["gene_pred"] = gene_matrix
         adata.obsm["img_pred"] = img_matrix
-        couts = couts.numpy().astype(np.float32)
+        couts = couts.numpy().astype(np.float64)
         couts[couts < 0] = 0
         adata.layers["recon"] = couts
         adata_pred = adata
@@ -333,9 +335,11 @@ def train_nano_fov(
         img_transformed = img.x.numpy()
 
         for i in range(img_transformed.shape[0]):
-            img = img_transformed[i].reshape(w * 2, h * 2, 3)
-            img = transform(np.uint8(img))
-            img = img.reshape(1, 3, 224, 224)
+            img = img_transformed[i].reshape(3, w * 2, h * 2)
+            img = np.transpose(img, (1, 2, 0))
+            img = (img - img.min()) / (img.max() - img.min()) * 255
+            img = transform(np.uint8(img))   
+            img = img.unsqueeze(0)
             img = img.to(device)
 
             with torch.no_grad():
@@ -344,7 +348,7 @@ def train_nano_fov(
             img = feature
             features.append(img.cpu().detach().numpy().reshape(-1))
         features = np.array(features)
-        features = np.vstack(features).astype(np.float)
+        features = np.vstack(features).astype(np.float64)
         img = torch.from_numpy(features)
 
         img_dim = features.shape[1]
@@ -498,9 +502,11 @@ def get_explanations(
         img_transformed = img.x.numpy()
 
         for i in range(img_transformed.shape[0]):
-            img = img_transformed[i].reshape(w * 2, h * 2, 3)
-            img = transform(np.uint8(img))
-            img = img.reshape(1, 3, 224, 224)
+            img = img_transformed[i].reshape(3, w * 2, h * 2)
+            img = np.transpose(img, (1, 2, 0))
+            img = (img - img.min()) / (img.max() - img.min()) * 255
+            img = transform(np.uint8(img))   
+            img = img.unsqueeze(0)
             img = img.to(device)
 
             with torch.no_grad():
@@ -510,7 +516,7 @@ def get_explanations(
             features.append(img.cpu().detach().numpy().reshape(-1))
 
         features = np.array(features)
-        features = np.vstack(features).astype(np.float)
+        features = np.vstack(features).astype(np.float64)
         img = torch.from_numpy(features)
 
         img_dim = features.shape[1]
@@ -737,7 +743,7 @@ def test_img(
     save_path="../checkpoint/trans_gene/",
     random_seed=0,
 ):
-    # Set seeed
+    # Set seed
     seed = random_seed
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -776,24 +782,26 @@ def test_img(
     )
 
     features = []
-    img1 = img.x.numpy()
+    img_transformed = img.x.numpy()
     w = 25
     h = 25
-    for i in range(img1.shape[0]):
-        img2 = img1[i].reshape(w * 2, h * 2, 3)
-        img2 = transform(np.uint8(img2))
-        img2 = img2.reshape(1, 3, 224, 224)
-        img2 = img2.to(device)
+    for i in range(img_transformed.shape[0]):
+        img = img_transformed[i].reshape(3, w * 2, h * 2)
+        img = np.transpose(img, (1, 2, 0))
+        img = (img - img.min()) / (img.max() - img.min()) * 255
+        img = transform(np.uint8(img))   
+        img = img.unsqueeze(0)
+        img = img.to(device)
         # We only extract features, so we don't need gradient
         with torch.no_grad():
             # Extract the feature from the image
-            feature = vgg_extractor(img2)
+            feature = vgg_extractor(img)
 
         x = feature
         features.append(x.cpu().detach().numpy().reshape(-1))
 
     features = np.array(features)
-    features = np.vstack(features).astype(np.float)
+    features = np.vstack(features).astype(np.float64)
 
     img.x = torch.FloatTensor(features)
     img_dim = img.x.shape[1]
@@ -827,7 +835,7 @@ def test_img(
 
             indexes = pd.isnull(adata_Vars.obs).any(1).to_numpy().nonzero()
             obs_df = adata_Vars.obs.dropna()
-            adata_Vars.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float32)
+            adata_Vars.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float64)
             x = adata_Vars.obsm["pred"].copy()
             x = np.delete(x, indexes, axis=0)
             davies_bouldin = sklearn.metrics.davies_bouldin_score(x, obs_df["Ground Truth"])
@@ -894,24 +902,26 @@ def train_img(
     )
 
     features = []
-    img1 = img.x.numpy()
+    img_transformed = img.x.numpy()
     w = 25
     h = 25
-    for i in range(img1.shape[0]):
-        img2 = img1[i].reshape(w * 2, h * 2, 3)
-        img2 = transform(np.uint8(img2))
-        img2 = img2.reshape(1, 3, 224, 224)
-        img2 = img2.to(device)
+    for i in range(img_transformed.shape[0]):
+        img = img_transformed[i].reshape(3, w * 2, h * 2)
+        img = np.transpose(img, (1, 2, 0))
+        img = (img - img.min()) / (img.max() - img.min()) * 255
+        img = transform(np.uint8(img))   
+        img = img.unsqueeze(0)
+        img = img.to(device)
 
         with torch.no_grad():
             # Extract features
-            feature = vgg_extractor(img2)
+            feature = vgg_extractor(img)
 
         x = feature
         features.append(x.cpu().detach().numpy().reshape(-1))
 
     features = np.array(features)
-    features = np.vstack(features).astype(np.float)
+    features = np.vstack(features).astype(np.float64)
 
     img.x = torch.FloatTensor(features)
     model = TransImg(hidden_dims=[data.x.shape[1], img.x.shape[1]] + hidden_dims).to(device)
@@ -987,7 +997,7 @@ def train_img(
 
                 indexes = pd.isnull(adata.obs).any(1).to_numpy().nonzero()
                 obs_df = adata.obs.dropna()
-                adata.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float32)
+                adata.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float64)
                 x = adata.obsm["pred"].copy()
                 x = np.delete(x, indexes, axis=0)
                 davies_bouldin = sklearn.metrics.davies_bouldin_score(x, obs_df["Ground Truth"])
@@ -996,3 +1006,348 @@ def train_img(
     torch.save(model.state_dict(), os.path.join(save_path, "final_%d.pth" % (repeat)))
     print(os.path.join(save_path, "final_%d.pth" % (repeat)))
     return adata
+
+def train_img2(
+    adata,
+    hidden_dims=[512, 30],
+    n_epochs=500,
+    lr=0.001,
+    gradient_clipping=5.0,
+    weight_decay=0.0001,
+    verbose=True,
+    random_seed=0,
+    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
+    save_path="../checkpoint/trans_gene/",
+    repeat=1,
+):
+    # Set seed
+    seed = random_seed
+    import random
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    # Get model instance
+    model = models.vgg16(pretrained=True)
+    vgg_model = FeatureExtractor(model)
+    
+    vgg_model = vgg_model.to(device)
+    
+    datas = []
+    gene_dim = 0
+    img_dim = 0 
+    adatas = []
+    adatas.append(adata)
+
+    for adata in adatas:
+        data, img = Transfer_img_Data(adata)
+        gene_dim = data.x.shape[1]
+
+        # Transform the image, so it becomes readable with the model
+        transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((224,224)),
+            transforms.ToTensor()                              
+        ])
+        
+        features = [] 
+        img_transformed = img.x.numpy()
+        
+        for i in range(img_transformed.shape[0]):
+            img = img_transformed[i]
+            img_p_normalized = (img - img.min()) / (img.max() - img.min()) * 255
+            img = transform(np.uint8(img_p_normalized))
+            img = img.unsqueeze(0)
+
+            with torch.no_grad():
+                # Extract features
+                feature = vgg_model(img.to(device))
+    
+            img = feature
+
+            features.append(img.cpu().detach().numpy().reshape(-1)) 
+        
+        features = np.array(features)
+        features = np.vstack(features)
+        img = torch.from_numpy(features)
+    
+        img_dim = features.shape[1]
+        
+        from tqdm import tqdm
+        data.x = torch.cat([data.x, img], dim=1)
+        datas.append(data)
+    
+    loader = DataLoader(datas, batch_size=128, num_workers=0, shuffle=True)
+    data = data.to(device)
+    img = img.to(device)
+    model = TransImg(hidden_dims=[gene_dim, img_dim] + hidden_dims).to(device)
+    
+    torch.save(model.state_dict(), os.path.join(save_path, 'init.pth'))
+    
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.0001)
+    
+    seed = 1234
+    import random
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
+    # Train model
+    for epoch in tqdm(range(1, n_epochs+1)):
+        for i, batch in enumerate(loader):
+            model.train()
+            batch = batch.to(device)
+            optimizer.zero_grad()
+            bgene = batch.x[:, :gene_dim]
+            bimg = batch.x[:, gene_dim:]
+            edge_index = batch.edge_index
+            
+            bgene = bgene.float()
+            bimg = bimg.float()
+            gz,iz,cz, gout,iout,cout,gap = model(bgene.float(), bimg.float(), edge_index, batch.batch)
+    
+            gloss = F.mse_loss(bgene, gout)
+            iloss = F.mse_loss(bgene, iout)
+            closs = F.mse_loss(bgene, cout)
+            
+            kl_loss = torch.nn.KLDivLoss(reduction = 'batchmean')
+            gout_pred = torch.nn.functional.log_softmax(gout,dim=1)
+            iout_pred = torch.nn.functional.log_softmax(iout,dim=1)
+            cout_pred = torch.nn.functional.log_softmax(cout,dim=1)
+            gout_target = torch.nn.functional.softmax(gout,dim=1)  
+            iout_target = torch.nn.functional.softmax(iout,dim=1)
+            cout_target = torch.nn.functional.softmax(cout,dim=1)
+            
+            kl_loss1 = kl_loss(gout_pred, cout_target)
+            kl_loss2 = kl_loss(cout_pred, iout_target)
+            kl_loss3 = kl_loss(iout_pred, gout_target)
+            kl_loss4 = kl_loss(cout_pred, gout_target)
+            kl_loss5 = kl_loss(iout_pred, cout_target)
+            kl_loss6 = kl_loss(gout_pred, iout_target)
+
+            loss = kl_loss1/1000 + kl_loss2/1000 + kl_loss3/1000 + kl_loss4/1000 + kl_loss5/1000 + kl_loss6/1000 + gloss + iloss + closs
+            
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
+            optimizer.step()
+        repeat = 1
+        # Save last 10 epoch models for model selection
+        if epoch > 495 and epoch % 1 == 0:
+            if not os.path.exists(os.path.join(save_path)):
+                os.makedirs(save_path)
+            torch.save(model.state_dict(), os.path.join(save_path, 'final_%d_%d.pth'%(epoch, repeat)))
+    repeat = 1
+    
+    # Save model
+    torch.save(model.state_dict(), os.path.join(save_path, 'final_%d.pth'%(repeat)))
+    print(os.path.join(save_path, "final_%d.pth" % (repeat)))
+    return adata
+
+def test_img2(
+    opt,
+    adata,
+    hidden_dims=[512, 30],
+    device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
+    save_path="../checkpoint/trans_gene/",
+    random_seed=0,
+):
+    
+    # Set seed
+    seed = random_seed
+    import random
+
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    # Get model instance
+    model = models.vgg16(pretrained=True)
+    vgg_model = FeatureExtractor(model)
+
+    vgg_model = vgg_model.to(device)
+
+    datas = []
+    gene_dim = 0
+    img_dim = 0 
+    adatas = []
+    adatas.append(adata)
+    for adata in adatas:
+
+        data, img = Transfer_img_Data(adata)
+
+        gene_dim = data.x.shape[1]
+
+        # Transform the image, so it becomes readable with the model
+        transform = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((224,224)),
+            transforms.ToTensor()                              
+        ])
+        
+        features = [] 
+        img_transformed = img.x.numpy()
+
+        for i in range(img_transformed.shape[0]):
+            img = img_transformed[i]
+            img_p_normalized = (img - img.min()) / (img.max() - img.min()) * 255
+            img = transform(np.uint8(img_p_normalized))
+            img = img.unsqueeze(0)
+
+            with torch.no_grad():
+                feature = vgg_model(img.to(device))
+    
+            img = feature
+            features.append(img.cpu().detach().numpy().reshape(-1)) 
+        
+        features = np.array(features)
+        features = np.vstack(features)
+        img = torch.from_numpy(features)
+
+        img_dim = features.shape[1]
+        
+        from tqdm import tqdm
+        data.x = torch.cat([data.x, img], dim=1)
+        datas.append(data)
+        
+    import anndata
+    adata = anndata.concat(adatas)
+
+    loader = DataLoader(datas, batch_size=32, num_workers=0, shuffle=False)
+    model = TransImg(hidden_dims=[gene_dim, img_dim] + hidden_dims).to(device)
+
+    best_davies = float('inf')
+    best_adata = None
+
+    # Get best model among the last 10 saved models
+    for k in range(496,500):
+        opt.pretrain = "final_"+str(k)+"_1.pth" 
+        model_name=None
+        if model_name is not None:
+            model.load_state_dict(torch.load(os.path.join(save_path, model_name)))
+        else:
+            print(os.path.join(save_path, opt.pretrain))
+            model.load_state_dict(torch.load(os.path.join(save_path, opt.pretrain),map_location=torch.device(opt.device)))
+
+        seed = 1234
+        import random
+        random.seed(seed)
+        os.environ['PYTHONHASHSEED'] = str(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+        hidden_matrix = None
+        gene_matrix = None
+        img_matrix = None
+        couts = None
+
+        for i,batch in enumerate(loader):
+            batch = batch.to(device)
+            bgene = batch.x[:, :gene_dim]
+            bimg = batch.x[:, gene_dim:]
+
+            bgene = bgene.float()
+            bimg = bimg.float()
+            bgene.requires_grad = True
+            edge_index = batch.edge_index
+
+            # Get latent space using model
+            gz,iz,cz, gout,iout,cout,gap = model(bgene, bimg, edge_index, batch.batch)
+            
+            if hidden_matrix is None:
+                hidden_matrix = cz.detach().cpu()
+                gene_matrix = gz.detach().cpu()
+                couts = cout.detach().cpu()
+                img_matrix = iz.detach().cpu()
+            else:
+                hidden_matrix = torch.cat([hidden_matrix, cz.detach().cpu()], dim=0)
+                gene_matrix = torch.cat([gene_matrix, gz.detach().cpu()], dim=0)
+                img_matrix = torch.cat([img_matrix, iz.detach().cpu()], dim=0)
+                couts = torch.cat([couts, cout.detach().cpu()], dim=0)
+
+        hidden_matrix = hidden_matrix.numpy()
+        gene_matrix = gene_matrix.numpy()
+        img_matrix = img_matrix.numpy()
+        adata.obsm['pred'] = hidden_matrix
+        adata.obsm['gene_pred'] = gene_matrix
+        adata.obsm['img_pred'] = img_matrix
+        couts = couts.numpy().astype(np.float64)
+        couts[couts < 0] = 0
+        adata.layers['recon'] = couts
+        adata_pred = adata
+        
+        # Perform clustering
+        sc.pp.neighbors(adata_pred, opt.ncluster, use_rep='pred')
+
+        def res_search(adata_pred, ncluster, seed, iter=200):
+            start = 0; end = 3
+            i = 0
+            while(start < end):
+                if i >= iter: return res
+                i += 1
+                res = (start + end) / 2
+                print(res)
+                random.seed(seed)
+                os.environ['PYTHONHASHSEED'] = str(seed)
+                np.random.seed(seed)
+                torch.manual_seed(seed)
+                torch.cuda.manual_seed(seed)
+                os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+                torch.backends.cudnn.deterministic = True
+                torch.backends.cudnn.benchmark = False
+                sc.tl.leiden(adata_pred, random_state=seed, resolution=res)
+                count = len(set(adata_pred.obs['leiden']))
+                if count == ncluster:
+                    print('find', res)
+                    return res
+                if count > ncluster:
+                    end = res
+                else:
+                    start = res
+            raise NotImplementedError()
+        
+        res = res_search(adata_pred, opt.ncluster, opt.seed)
+        
+        sc.tl.leiden(adata_pred, resolution=res, key_added='leiden', random_state=opt.seed)
+        obs_df = adata_pred.obs.dropna()
+        
+        import sklearn
+        davies_bouldin = sklearn.metrics.davies_bouldin_score(adata.obsm['pred'], obs_df["leiden"])
+        print('Davies_bouldin: %.2f'%davies_bouldin)
+        
+        if davies_bouldin <= best_davies :
+
+            best_adata = adata_pred.copy()
+            best_davies  = davies_bouldin
+
+        from sklearn.metrics import silhouette_score, davies_bouldin_score, calinski_harabasz_score
+
+        raw_preds = adata_pred.obs["leiden"]
+        silhouette = silhouette_score(adata.obsm["pred"], raw_preds)
+        print('Silhouette Score: %.2f' % silhouette)
+        
+        davies_bouldin = davies_bouldin_score(adata.obsm["pred"], raw_preds)
+        print('Davies-Bouldin Score: %.2f' % davies_bouldin)
+
+        calinski = calinski_harabasz_score(adata.obsm["pred"], raw_preds)
+        print('Calinski Score: %.2f' % calinski)
+    return best_adata
