@@ -3,6 +3,7 @@ import argparse
 from train_nanostring import train_nano_fov
 from train_visium import train_10x
 from train_10x_visium import train_10x_visium
+from train_h5ad import train_h5ad
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -71,3 +72,5 @@ if __name__ == "__main__":
         opt.rad_cutoff = 188
         opt.img_size = 15
         train_10x_visium(opt)
+    else:
+        train_h5ad(opt)
