@@ -37,6 +37,12 @@ git clone https://github.com/asbudhkar/xSiGra
 The dataset can be download [here](https://nanostring.com/products/cosmx-spatial-molecular-imager/ffpe-dataset/)
 ### 10x Visium 
 The dataset can be download [here](https://github.com/LieberInstitute/HumanPilot/)
+### Human Breast Cancer 
+The dataset can be download [here](https://www.10xgenomics.com/datasets/human-breast-cancer-ductal-carcinoma-in-situ-invasive-carcinoma-ffpe-1-standard-1-3-0)
+### Mouse Brain Anterior
+The dataset can be download [here](https://www.10xgenomics.com/datasets/mouse-brain-serial-section-2-sagittal-anterior-1-standard-1-0-0)
+### Mouse Brain Coronal
+The dataset can be download [here](https://www.10xgenomics.com/datasets/mouse-brain-section-coronal-1-standard)
 
 ## Folder structure
 
@@ -123,6 +129,21 @@ python3 train.py --lr $lr --epochs $epoch --id 151676 --seed $seed --repeat $rep
 And you can use the bash script to train all slices:
 ```
 sh train_visium.sh
+```
+
+#### 3. for Human breast cancer
+```
+python3 train.py --dataset human_breast_cancer
+```
+
+#### 4. for Mouse brain anterior
+```
+python3 train.py --dataset mouse_brain_anterior
+```
+
+#### 5. for Mouse brain coronal
+```
+python3 train.py --dataset mouse_brain_coronal
 ```
 
 ## Benchmark Explanations

@@ -50,7 +50,7 @@ if __name__ == "__main__":
         opt.h5ad_file = "Visium_FFPE_Human_Breast_Cancer_filtered_feature_bc_matrix.h5"
         opt.image_name = "Visium_FFPE_Human_Breast_Cancer_image.tif"
         opt.rad_cutoff = 400
-        opt.img_size = 56
+        opt.img_size = 66
         train_10x_visium(opt)
 
     elif opt.dataset == "mouse_brain_anterior":
