@@ -95,6 +95,27 @@ And you can use the bash script to test all slices:
 sh test_visium.sh
 ```
 
+#### 2. for 10x Visium dataset
+The results will be stored in "/path/xSiGra/10x_results/"
+```
+python3 train.py --test_only 1 --lr $lr --epochs $epoch --id 151676 --seed $seed --repeat $repeat --ncluster 7 --save_path $sp --dataset 10x --cluster_method mclust --root ../dataset/10x/
+```
+
+#### 3. for Human breast cancer
+```
+python3 train.py --dataset human_breast_cancer --test_only 1
+```
+
+#### 4. for Mouse brain anterior
+```
+python3 train.py --dataset mouse_brain_anterior --test_only 1
+```
+
+#### 5. for Mouse brain coronal
+```
+python3 train.py --dataset mouse_brain_coronal --test_only 1
+```
+
 ## Visualize results using saved model
 
 Go to /path/to/xSiGra/xSiGra_model

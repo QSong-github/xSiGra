@@ -7,4 +7,3 @@ python3 train_nanostring.py --test_only 1 --dataset lung9-rep1  --root ../datase
 python3 train_nanostring.py --test_only 1 --dataset lung9-rep2 --ncluster 4 --root ../dataset/nanostring/lung9-rep2 --save_path ../checkpoint/nanostring_train_lung9_rep2 --seed 1234 --epochs 200 --lr 1e-3 --num_fov 45 --device cuda:0
 python3 train_nanostring.py --test_only 1 --dataset lung12 --root ../dataset/nanostring/lung12 --save_path ../checkpoint/nanostring_train_lung12 --seed 1234 --epochs 200 --lr 1e-3 --num_fov 28 --device cuda:0
 python3 train_nanostring.py --test_only 1 --dataset lung13 --root ../dataset/nanostring/lung13 --save_path ../checkpoint/nanostring_train_lung13 --seed 1234 --epochs 200 --lr 1e-3 --num_fov 20 --device cuda:0
-python3 train_nanostring.py --test_only 1 --save_path ../checkpoint/nanostring_train_lung13
