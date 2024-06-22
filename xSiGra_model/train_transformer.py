@@ -168,7 +168,7 @@ def test_nano_fov(
     best_adata = None
 
     # Select best model using Davies Bouldin score amoung the last 10 saved
-    for k in range(191, 201):
+    for k in range(n_epochs-9, n_epochs+1):
         opt.pretrain = "final_" + str(k) + "_0.pth"
 
         if model_name is not None:
@@ -418,7 +418,7 @@ def train_nano_fov(
             optimizer.step()
 
         # Save last 10 epoch models for model selection
-        if epoch > 190 and epoch % 1 == 0:
+        if epoch > n_epochs-10 and epoch % 1 == 0:
             torch.save(
                 model.state_dict(),
                 os.path.join(save_path, "final_%d_%d.pth" % (epoch, repeat)),
@@ -825,7 +825,7 @@ def test_img(
     best_dav = float("inf")
 
     # Get best model among the last 10 saved models
-    for i in range(691, 701):
+    for i in range(n_epochs-9, n_epochs+1):
         model.load_state_dict(torch.load(os.path.join(save_path, "final_%d_%d.pth" % (i, 0))))
 
         for i, batch in enumerate(loader):
@@ -842,7 +842,8 @@ def test_img(
             gz, iz, cz, gout, iout, cout, hidden = model(data, img, batch.edge_index, batch.batch)
             adata_Vars.obsm["pred"] = cz.clone().detach().cpu().numpy()
 
-            indexes = pd.isnull(adata_Vars.obs).any(1).to_numpy().nonzero()
+            obs_df = adata.obs
+            indexes = np.where(obs_df.isnull().any(axis=1))[0]
             obs_df = adata_Vars.obs.dropna()
             adata_Vars.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float64)
             x = adata_Vars.obsm["pred"].copy()
@@ -996,14 +997,15 @@ def train_img(
             optimizer.step()
 
             # Save model
-            if epoch > 690:
+            if epoch > n_epochs-10:
                 torch.save(
                     model.state_dict(),
                     os.path.join(save_path, "final_%d_%d.pth" % (epoch, repeat)),
                 )
                 adata.obsm["pred"] = cz.clone().detach().cpu().numpy()
 
-                indexes = pd.isnull(adata.obs).any(1).to_numpy().nonzero()
+                obs_df = adata.obs
+                indexes = np.where(obs_df.isnull().any(axis=1))[0]
                 obs_df = adata.obs.dropna()
                 adata.obsm["pred"] = cz.to("cpu").detach().numpy().astype(np.float64)
                 x = adata.obsm["pred"].copy()
@@ -1029,6 +1031,7 @@ def train_img2(
     repeat=1,
 ):
     # Set seed
+    import random
     seed = random_seed
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -1149,7 +1152,7 @@ def train_img2(
             optimizer.step()
         repeat = 1
         # Save last 10 epoch models for model selection
-        if epoch > 495 and epoch % 1 == 0:
+        if epoch > n_epochs-10 and epoch % 1 == 0:
             if not os.path.exists(os.path.join(save_path)):
                 os.makedirs(save_path)
             torch.save(model.state_dict(), os.path.join(save_path, 'final_%d_%d.pth'%(epoch, repeat)))
@@ -1240,7 +1243,7 @@ def test_img2(
     best_adata = None
 
     # Get best model among the last 10 saved models
-    for k in range(496,500):
+    for k in range(opt.epochs-9, opt.epochs+1):
         opt.pretrain = "final_"+str(k)+"_1.pth" 
         model_name=None
         if model_name is not None:
@@ -1495,7 +1498,7 @@ def train_adata(
         repeat = 1
 
         # Save last 10 epoch models for model selection
-        if epoch > 495 and epoch % 1 == 0:
+        if epoch > n_epochs-10 and epoch % 1 == 0:
             if not os.path.exists(os.path.join(save_path)):
                 os.makedirs(save_path)
             torch.save(model.state_dict(), os.path.join(save_path, 'final_%d_%d.pth'%(epoch, repeat)))
@@ -1589,7 +1592,7 @@ def test_adata(
     best_adata = None
 
     # Get best model among the last 10 saved models
-    for k in range(496,500):
+    for k in range(opt.epochs-9, opt.epochs+1):
         opt.pretrain = "final_"+str(k)+"_1.pth" 
         model_name=None
         if model_name is not None:
