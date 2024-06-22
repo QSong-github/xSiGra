@@ -17,10 +17,6 @@ cudnn.benchmark = False
 import warnings
 warnings.filterwarnings('ignore')
 
-from torch_geometric.loader import NeighborLoader, NeighborSampler, DataLoader
-from transModel import TransImg, ClusteringLayerModel
-from utils import Transfer_img_Data
-
 import torch
 import torch.backends.cudnn as cudnn
 
