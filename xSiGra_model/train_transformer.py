@@ -168,7 +168,7 @@ def test_nano_fov(
     best_adata = None
 
     # Select best model using Davies Bouldin score amoung the last 10 saved
-    for k in range(n_epochs-9, n_epochs+1):
+    for k in range(opt.epochs-9, opt.epochs+1):
         opt.pretrain = "final_" + str(k) + "_0.pth"
 
         if model_name is not None:

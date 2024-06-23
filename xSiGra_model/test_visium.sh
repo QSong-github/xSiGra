@@ -1,6 +1,6 @@
 #!/bin/bash
 lr=1e-3
-epoch=600
+epoch=700
 seed=1234
 repeat=1
 sp='../checkpoint/10x/'
