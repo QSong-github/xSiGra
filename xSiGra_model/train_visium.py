@@ -67,7 +67,7 @@ def infer(opt, result_path="../10x_results/"):
     model_path = os.path.join(os.path.join(opt.save_path, opt.id))
 
     # Test model
-    adata = test_img(adata, save_path=model_path, hidden_dims=[512, 30])
+    adata = test_img(adata, save_path=model_path, hidden_dims=[512, 30], n_epochs=opt.epochs)
 
     # Perform clustering
     adata = mclust_R(adata, used_obsm="pred", num_cluster=opt.ncluster)

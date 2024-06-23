@@ -750,6 +750,7 @@ def test_img(
     hidden_dims=[512, 30],
     device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     save_path="../checkpoint/trans_gene/",
+    n_epochs=700,
     random_seed=0,
 ):
     # Set seed
@@ -1146,6 +1147,7 @@ def train_img2(
             kl_loss6 = kl_loss(gout_pred, iout_target)
 
             loss = kl_loss1/1000 + kl_loss2/1000 + kl_loss3/1000 + kl_loss4/1000 + kl_loss5/1000 + kl_loss6/1000 + gloss + iloss + closs
+            loss = gloss + iloss + closs
             
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
