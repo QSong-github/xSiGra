@@ -247,7 +247,6 @@ python3 test_significant_pairs.py
 
 Please cite our paper if you use this code in your own work
 ```
-xSiGra: Explainable model for single-cell spatial data elucidation
-Aishwarya Budhkar, Ziyang Tang, Xiang Liu, Xuhong Zhang, Jing Su, Qianqian Song
-bioRxiv 2024.04.27.591458; doi: https://doi.org/10.1101/2024.04.27.591458
+Aishwarya Budhkar, Ziyang Tang, Xiang Liu, Xuhong Zhang, Jing Su, Qianqian Song, xSiGra: explainable model for single-cell spatial data elucidation, Briefings in Bioinformatics, Volume 25, Issue 5, September 2024, bbae388, https://doi.org/10.1093/bib/bbae388
+
 ```
